@@ -4,12 +4,37 @@
 
 #define MUSICFILENAME "music.mp3"
 
+/* Music path */
+char *filename = NULL;
+
+GtkWidget   *window = NULL;
+GtkLabel    *label = NULL;
+
 /* Global variables */
 /* MiniAudio init */
 ma_result result;
 ma_decoder decoder;
 ma_device_config device_config;
 ma_device device;
+
+void open_file(void) {
+  GtkWidget *dialog;
+     
+  dialog = gtk_file_chooser_dialog_new ("Open File", window, GTK_FILE_CHOOSER_ACTION_OPEN, "_Cancel", GTK_RESPONSE_CANCEL, "_Open", GTK_RESPONSE_ACCEPT, NULL);
+     
+  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+    
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+
+    printf("Path: %s\n", filename);
+
+    gtk_label_set_text(label, filename);
+
+    g_free(filename);
+  }
+     
+  gtk_widget_destroy (dialog);
+}
 
 void data_callback(ma_device* device, void* output, const void* input, ma_uint32 frame_count) {
   ma_decoder *decoder = (ma_decoder*)device->pUserData;
@@ -23,13 +48,13 @@ void data_callback(ma_device* device, void* output, const void* input, ma_uint32
   (void)input;
 }
 
-void stop_playback() {
+void stop_playback(void) {
   if(ma_device_stop(&device) != MA_SUCCESS) {
     printf("Unable stop playback\n");
   }
 }
 
-void start_playback() {
+void start_playback(void) {
   if(ma_device_start(&device) != MA_SUCCESS) {
     printf("Unable start playback\n");
   }
@@ -45,10 +70,8 @@ void window_destroy(void) {
 int main(int argc, char** argv) {
 
   /* GTK init */
-  GError *error = NULL;
-
-  GtkBuilder  *builder;
-  GtkWidget   *window;
+  GError      *error = NULL;
+  GtkBuilder  *builder = NULL;
 
   gtk_init(&argc, &argv);
 
@@ -82,7 +105,12 @@ int main(int argc, char** argv) {
   }
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
+  label = GTK_LABEL(gtk_builder_get_object(builder, "song_name"));
   if(window == NULL) {
+    printf("Error\n");
+  }
+
+  if(label == NULL) {
     printf("Error\n");
   }
 
