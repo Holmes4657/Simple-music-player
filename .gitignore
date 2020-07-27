@@ -1,6 +1,4 @@
 .vscode/
 build/
 src/miniaudio.h
-src/main_window.c
-src/main_window.h
 music.mp3
