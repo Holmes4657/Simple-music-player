@@ -1,13 +1,35 @@
 #include "main_window.h"
 #include "playback.h"
+#include <taglib/tag_c.h>
 
 /* Music path */
 char *filename = NULL;
+char *title = NULL;
 
 GtkWidget *window = NULL;
 GtkLabel *label = NULL;
+GtkLabel *artist_label = NULL;
+GtkLabel *album_label = NULL;
 
-void setup_main_window() {
+void read_tags(char* filename) {
+  TagLib_File *file = NULL;
+  TagLib_Tag *tag = NULL;
+  const TagLib_AudioProperties *properties = NULL;
+
+  file = taglib_file_new(filename);
+  if(file == NULL) {
+    printf("Unable to read file\n");
+  }
+
+  tag = taglib_file_tag(file);
+  properties = taglib_file_audioproperties(file);
+
+  gtk_label_set_text(label, taglib_tag_title(tag));
+  gtk_label_set_text(artist_label, taglib_tag_artist(tag));
+  gtk_label_set_text(album_label, taglib_tag_album(tag));
+}
+
+void setup_main_window(void) {
   GError *error = NULL;
   GtkBuilder *builder = NULL;
   
@@ -25,6 +47,16 @@ void setup_main_window() {
   label = GTK_LABEL(gtk_builder_get_object(builder, "song_name"));
   if(label == NULL) {
     printf("Cound not find song_name object\n");
+  }
+
+  artist_label = GTK_LABEL(gtk_builder_get_object(builder, "artist"));
+  if(artist_label == NULL) {
+    printf("Cound not find artist_label object\n");
+  }
+
+  album_label = GTK_LABEL(gtk_builder_get_object(builder, "album"));
+  if(album_label == NULL) {
+    printf("Cound not find album_label object\n");
   }
 
   gtk_builder_connect_signals(builder, NULL);
@@ -48,8 +80,8 @@ void open_file(void) {
     filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 
     printf("Path: %s\n", filename);
-
-    gtk_label_set_text(label, filename);
+    
+    read_tags(filename);
 
     if(init_playback(filename) != true) {
       printf("Error in playback file\n");
@@ -60,8 +92,7 @@ void open_file(void) {
 }
 
 /* Play button pressed */
-void start_playback() {
-  printf("\nstart_playback action\n");
+void start_playback(void) {
   if(filename != NULL) {
     start_file();
   } else {
@@ -70,8 +101,7 @@ void start_playback() {
 }
 
 /* Stop button pressed */
-void stop_playback() {
-  printf("stop_playback action\n");
+void stop_playback(void) {
   if(filename != NULL) {
     stop_file();
   } else {
@@ -81,6 +111,7 @@ void stop_playback() {
 
 /* Destory window and quit */
 void window_destroy(void) {
+  ma_uninit();
   g_free(filename);
   gtk_main_quit();
 }

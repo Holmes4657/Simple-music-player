@@ -50,7 +50,7 @@ bool init_playback(char *filename) {
   }
 }
 
-void start_file() {
+void start_file(void) {
   if(ma_device_start(&device) != MA_SUCCESS) {
     printf("Failed to start playback device\n");
     return;
@@ -59,11 +59,16 @@ void start_file() {
   }
 }
 
-void stop_file() {
+void stop_file(void) {
   if(ma_device_stop(&device) != MA_SUCCESS) {
     printf("Failed to stop playback device\n");
     return;
   } else {
     printf("Playback stoped\n");
   }
+}
+
+void ma_uninit(void) {
+  ma_device_uninit(&device);
+  ma_decoder_uninit(&decoder);
 }

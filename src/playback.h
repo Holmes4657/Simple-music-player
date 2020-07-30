@@ -4,5 +4,6 @@
 
 bool init_playback(char *filename);
 
-void start_file();
-void stop_file();
+void start_file(void);
+void stop_file(void);
+void ma_uninit(void);
